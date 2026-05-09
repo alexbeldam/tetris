@@ -1,9 +1,5 @@
 from typing import Any, List, Optional, Sequence, Tuple
-
-try:
-    from settings import SETTINGS
-except ModuleNotFoundError:
-    from src.settings import SETTINGS
+from settings import SETTINGS
 
 
 ImageKey = str
