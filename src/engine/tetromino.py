@@ -36,16 +36,18 @@ class Tetromino:
         return get_shape(self.piece, self.rotation_index)
 
     @property
-    def image_key(self) -> str:
-        return self.tile.name
+    def tile_info(self):
+        from settings import SETTINGS
+
+        return SETTINGS.TILE_COLORS.get_tile_info(self.tile)
 
     @property
-    def image_asset(self) -> str:
-        return self.image_key
+    def color(self) -> Tuple[int, int, int]:
+        return self.tile_info.color
 
     @property
-    def asset_name(self) -> str:
-        return self.image_key
+    def tile_index(self) -> int:
+        return self.tile_info.index
 
     def rotate(self, board: object = None) -> bool:
         next_rotation = (self.rotation_index + 1) % 4
