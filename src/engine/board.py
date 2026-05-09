@@ -1,5 +1,4 @@
 from typing import Any, List, Optional, Sequence, Tuple
-from settings import SETTINGS
 
 
 ImageKey = str
@@ -11,9 +10,17 @@ Position = Tuple[int, int]
 class Board:
     def __init__(
         self,
-        width: int = SETTINGS.SCREEN.GRID_WIDTH,
-        height: int = SETTINGS.SCREEN.GRID_HEIGHT,
+        width: Optional[int] = None,
+        height: Optional[int] = None,
     ) -> None:
+        if width is None or height is None:
+            from settings import SETTINGS
+
+            if width is None:
+                width = SETTINGS.SCREEN.GRID_WIDTH
+            if height is None:
+                height = SETTINGS.SCREEN.GRID_HEIGHT
+
         self.width = width
         self.height = height
         self.grid: List[List[Cell]] = [
