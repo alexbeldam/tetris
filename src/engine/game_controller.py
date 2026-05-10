@@ -96,8 +96,7 @@ class GameController:
         self._event_handlers['next_piece_changed'].append(handler)
 
     def _apply_gravity(self) -> None:
-        if not self.move_down():
-            self._lock_piece()
+        self.move_down()
 
     def _lock_piece(self) -> None:
         if self.current_piece is None:
