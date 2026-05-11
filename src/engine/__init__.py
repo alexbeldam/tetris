@@ -4,6 +4,7 @@ from .shapes import get_shape, get_all_rotations, materialize_shape, get_occupie
 from .board import Board
 from .game_controller import GameController
 from .physics import GravityController
+from .progression import LevelManager
 from .scoring import ScoreCalculator
 from .events import (
     LinesClearedHandler,
@@ -23,6 +24,7 @@ __all__ = [
     'Board',
     'GameController',
     'GravityController',
+    'LevelManager',
     'ScoreCalculator',
     'LinesClearedHandler',
     'PieceLockedHandler',
