@@ -5,6 +5,7 @@ from .board import Board
 from .game_controller import GameController
 from .physics import GravityController
 from .progression import LevelManager
+from .scoring import ScoreCalculator
 from .events import (
     LinesClearedHandler,
     PieceLockedHandler,
@@ -24,6 +25,7 @@ __all__ = [
     'GameController',
     'GravityController',
     'LevelManager',
+    'ScoreCalculator',
     'LinesClearedHandler',
     'PieceLockedHandler',
     'GameOverHandler',
