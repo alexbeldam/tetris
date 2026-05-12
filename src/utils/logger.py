@@ -42,7 +42,10 @@ class LogManager:
         log_path = pm.get_log_path()
         log_dir = os.path.dirname(log_path)
 
-        self.logger.setLevel(logging.INFO)
+        log_level_str = os.getenv("LOG_LEVEL", "INFO").upper()
+        log_level = self._LEVELS.get(log_level_str, logging.INFO)
+        
+        self.logger.setLevel(log_level)
 
         file_formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         file_handler = logging.FileHandler(log_path, mode='a', encoding='utf-8')

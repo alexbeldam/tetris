@@ -51,11 +51,24 @@ class Tetromino:
 
     def rotate(self, board: object = None) -> bool:
         next_rotation = (self.rotation_index + 1) % 4
-        if self._would_collide(board, rotation_index=next_rotation):
-            return False
-
-        self.rotation_index = next_rotation
-        return True
+        
+        if self.piece == TetrominoType.O:
+            self.rotation_index = next_rotation
+            return True
+        
+        kick_offsets = self._get_kick_offsets(self.rotation_index, next_rotation)
+        
+        for offset_x, offset_y in kick_offsets:
+            test_x = self.x + offset_x
+            test_y = self.y + offset_y
+            
+            if not self._would_collide(board, x=test_x, y=test_y, rotation_index=next_rotation):
+                self.x = test_x
+                self.y = test_y
+                self.rotation_index = next_rotation
+                return True
+        
+        return False
 
     def move_left(self, board: object = None) -> bool:
         return self._move(dx=-1, dy=0, board=board)
@@ -117,3 +130,13 @@ class Tetromino:
             target_x,
             target_y,
         )
+    
+    def _get_kick_offsets(self, from_rotation: int, to_rotation: int) -> List[Tuple[int, int]]:
+        from settings import SETTINGS
+        
+        rotation_key = f"{from_rotation}->{to_rotation}"
+        
+        if self.piece == TetrominoType.I:
+            return SETTINGS.SRS.I_KICKS.get(rotation_key, [(0, 0)])
+        else:
+            return SETTINGS.SRS.JLSTZ_KICKS.get(rotation_key, [(0, 0)])

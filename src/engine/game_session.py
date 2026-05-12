@@ -5,6 +5,7 @@ from .game_controller import GameController
 from .physics import GravityController
 from .progression import LevelManager
 from .scoring import ScoreCalculator
+from utils.logger import log
 
 
 class GameState(Enum):
@@ -51,12 +52,15 @@ class GameSession:
     def pause(self) -> None:
         if self._state == GameState.RUNNING:
             self._state = GameState.PAUSED
+            log.debug("⏸️  Game paused")
 
     def resume(self) -> None:
         if self._state == GameState.PAUSED:
             self._state = GameState.RUNNING
+            log.debug("▶️  Game resumed")
 
     def reset(self) -> None:
+        log.debug("🔄 Resetting game session to initial state")
         self._score = 0
         self._level_manager.reset()
         self._state = GameState.RUNNING
@@ -71,13 +75,17 @@ class GameSession:
         if self._state != GameState.RUNNING:
             return
 
-        self._score += self._score_calculator.calculate_points(
+        points_earned = self._score_calculator.calculate_points(
             lines_cleared,
             self.level,
         )
+        self._score += points_earned
+        log.debug(f"📊 Score updated: +{points_earned} points (total: {self._score})")
+        
         level_changed = self._level_manager.add_lines(lines_cleared)
 
         if level_changed:
+            log.info(f"🎯 Level up! Now at level {self.level} - gravity speed increased")
             self._sync_gravity_interval()
 
     def _on_game_over(self) -> None:

@@ -1,0 +1,63 @@
+from typing import Dict
+
+from engine import GameController, GameSession
+from service_container import ServiceContainer
+from settings import SETTINGS
+from ui.screen import Screen
+from ui.screens import (
+    GameOverScreen,
+    GameScreen,
+    LoadingScreen,
+    MenuScreen,
+    PauseScreen,
+    RankingScreen,
+)
+
+
+class ScreenFactory:
+    @staticmethod
+    def create_loading_screen(services: ServiceContainer) -> LoadingScreen:
+        def on_loading_complete():
+            try:
+                icon = services.asset_manager.get_image("logo")
+            except (KeyError, FileNotFoundError, Exception):
+                icon = None
+            
+            screen_width = SETTINGS.GRID.GAME_WIDTH + SETTINGS.GRID.SIDEBAR_WIDTH
+            screen_height = SETTINGS.GRID.GAME_HEIGHT
+            services.screen_manager.reconfigure_window(
+                screen_width,
+                screen_height,
+                SETTINGS.APP_NAME,
+                icon,
+                decorated=True
+            )
+            services.screen_manager.distribute_assets(services.asset_manager)
+        
+        return LoadingScreen(assets=services.asset_manager, on_complete=on_loading_complete)
+    
+    @staticmethod
+    def create_all_screens(
+        game: GameController,
+        session: GameSession,
+        services: ServiceContainer
+    ) -> Dict[str, Screen]:
+        loading_screen = ScreenFactory.create_loading_screen(services)
+        game_screen = GameScreen(game, session, assets=None)
+        
+        return {
+            SETTINGS.SCREEN_NAMES.LOADING: loading_screen,
+            SETTINGS.SCREEN_NAMES.MENU: MenuScreen(assets=None),
+            SETTINGS.SCREEN_NAMES.RANKING: RankingScreen(assets=None),
+            SETTINGS.SCREEN_NAMES.GAME: game_screen,
+            SETTINGS.SCREEN_NAMES.PAUSE: PauseScreen(game_screen, assets=None),
+            SETTINGS.SCREEN_NAMES.GAME_OVER: GameOverScreen(game_screen, assets=None),
+        }
+    
+    @staticmethod
+    def register_screens(
+        screen_manager,
+        screens: Dict[str, Screen]
+    ) -> None:
+        for name, screen in screens.items():
+            screen_manager.register_screen(name, screen)

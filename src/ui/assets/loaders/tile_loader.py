@@ -19,7 +19,7 @@ class TileLoader:
         
         tile_width = tilemap.get_width() // SETTINGS.TILEMAP.COLUMNS
         tile_height = tilemap.get_height() // SETTINGS.TILEMAP.ROWS
-        tile_size = SETTINGS.SCREEN.TILE_SIZE
+        tile_size = SETTINGS.GRID.TILE_SIZE
         
         tiles_to_load = [t.tile for t in Tetromino]
         

@@ -11,6 +11,7 @@ from .events import (
 from .physics import GravityController
 from .tetromino import Tetromino
 from .tile import Tetromino as TetrominoType
+from utils.logger import log
 
 
 class GameController:
@@ -54,12 +55,18 @@ class GameController:
     def move_left(self) -> bool:
         if self.is_game_over or self.current_piece is None:
             return False
-        return self.current_piece.move_left(self.board)
+        
+        moved = self.current_piece.move_left(self.board)
+        log.debug(f"⬅️  Move left: {'success' if moved else 'blocked by wall/blocks'}")
+        return moved
 
     def move_right(self) -> bool:
         if self.is_game_over or self.current_piece is None:
             return False
-        return self.current_piece.move_right(self.board)
+        
+        moved = self.current_piece.move_right(self.board)
+        log.debug(f"➡️  Move right: {'success' if moved else 'blocked by wall/blocks'}")
+        return moved
 
     def move_down(self) -> bool:
         if self.is_game_over or self.current_piece is None:
@@ -75,13 +82,17 @@ class GameController:
     def rotate(self) -> bool:
         if self.is_game_over or self.current_piece is None:
             return False
-        return self.current_piece.rotate(self.board)
+        
+        rotated = self.current_piece.rotate(self.board)
+        log.debug(f"🔄 Rotation: {'success' if rotated else 'blocked'}")
+        return rotated
 
     def hard_drop(self) -> int:
         if self.is_game_over or self.current_piece is None:
             return 0
         
         distance = self.current_piece.fall(self.board)
+        log.debug(f"⬇️  Hard drop: piece fell {distance} rows before locking")
         self._lock_piece()
         
         return distance
@@ -114,12 +125,14 @@ class GameController:
         if self.current_piece is None:
             return
 
+        log.debug(f"🔒 Locking piece {self.current_piece.piece.name} at position ({self.current_piece.x}, {self.current_piece.y})")
         self.board.fix_block(self.current_piece)
         
         self._emit_event('piece_locked', self.current_piece.piece)
         
         cleared_lines = self.board.clear_full_rows()
         if cleared_lines > 0:
+            log.debug(f"🧹 Board cleared {cleared_lines} full row(s)")
             self._emit_event('line_clear', cleared_lines)
         
         self._spawn_new_piece()
@@ -131,6 +144,7 @@ class GameController:
         self.current_piece = Tetromino(piece=self.next_piece)
         
         if self._check_game_over():
+            self._displace_piece_on_game_over()
             self.is_game_over = True
             self._emit_event('game_over')
             return
@@ -142,11 +156,35 @@ class GameController:
         if self.current_piece is None:
             return False
         
-        return self.board.check_collision(
+        collision = self.board.check_collision(
             self.current_piece.matrix,
             self.current_piece.x,
             self.current_piece.y,
         )
+        
+        if collision:
+            log.debug(f"⚠️  Game over condition detected: spawn collision with piece {self.current_piece.piece.name}")
+        
+        return collision
+    
+    def _displace_piece_on_game_over(self) -> None:
+        if self.current_piece is None:
+            return
+        
+        max_displacement = 2
+        
+        for _ in range(max_displacement):
+            self.current_piece.y -= 1
+            
+            if not self.board.check_collision(
+                self.current_piece.matrix,
+                self.current_piece.x,
+                self.current_piece.y,
+                allow_top_overflow=True,
+            ):
+                return
+        
+        log.warning(f"⚠️  Could not find clear position for game over piece {self.current_piece.piece.name} after {max_displacement} attempts")
 
     def _generate_next_piece(self) -> TetrominoType:
         from settings import SETTINGS

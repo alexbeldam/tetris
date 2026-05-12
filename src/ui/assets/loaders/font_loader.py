@@ -9,7 +9,7 @@ class FontLoader(BaseLoader):
     def __init__(self, directory: str):
         super().__init__(directory, "🔤", "fonts")
         self._fonts: Dict[int, pygame.font.Font] = {}
-        self._font_path = os.path.join(directory, SETTINGS.ASSETS.FONT_NAME)
+        self._font_path = os.path.join(directory, SETTINGS.UI_TYPOGRAPHY.FONT_NAME)
     
     def _load_single(self, size: int) -> bool:
         font = pygame.font.Font(self._font_path, size)

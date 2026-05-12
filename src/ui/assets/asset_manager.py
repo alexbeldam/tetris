@@ -19,7 +19,7 @@ class AssetManager:
         self, 
         progress_callback: Optional[Callable[[str, int, int], None]] = None
     ) -> Dict[str, int]:
-        log.info("🔍 Scanning assets...")
+        log.debug("🔍 Scanning asset directories for loadable resources")
         
         img_dir = PathManager.get_image_path()
         aud_dir = PathManager.get_audio_path()
@@ -28,12 +28,12 @@ class AssetManager:
         aud_files = os.listdir(aud_dir)
         wav_files = [f for f in aud_files if f.endswith(SETTINGS.ASSETS.SFX_EXTENSIONS)]
         ogg_files = [f for f in aud_files if f.endswith(SETTINGS.ASSETS.MUSIC_EXTENSIONS)]
-        font_sizes = list(SETTINGS.ASSETS.FONT_SIZES)
+        font_sizes = list(SETTINGS.UI_TYPOGRAPHY.all_sizes)
         tile_count = len(list(Tetromino))
         
         total_items = len(img_files) + len(wav_files) + len(ogg_files) + len(font_sizes) + tile_count
         
-        log.info(f"📦 Found {total_items} assets to load.")
+        log.info(f"Loading {total_items} game assets ({len(img_files)} images, {len(wav_files)} SFX, {len(ogg_files)} music, {len(font_sizes)} fonts, {tile_count} tiles)")
         
         progress_tracker = ProgressTracker(total_items, progress_callback)
         
