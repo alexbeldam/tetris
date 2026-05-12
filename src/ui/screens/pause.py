@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 import pygame
 
@@ -7,14 +7,18 @@ from ui.assets import AssetManager
 from ui.screen import Screen
 from ui.screens.game import GameScreen
 
+if TYPE_CHECKING:
+    from ui.audio import AudioManager
+
 
 class PauseScreen(Screen):
     def __init__(
         self,
         game_screen: GameScreen,
         assets: Optional[AssetManager] = None,
+        audio_manager: Optional["AudioManager"] = None,
     ) -> None:
-        super().__init__(assets)
+        super().__init__(assets, audio_manager)
         self.game_screen = game_screen
 
     def handle_events(self, events: List[pygame.event.Event]) -> Optional[str]:
@@ -30,6 +34,8 @@ class PauseScreen(Screen):
                 self.game_screen.session.resume()
                 return SETTINGS.SCREEN_NAMES.GAME
             if event.key == pygame.K_q:
+                if self.game_screen.audio_manager:
+                    self.game_screen.audio_manager.stop_bgm()
                 self.game_screen.session.reset()
                 return SETTINGS.SCREEN_NAMES.MENU
         return None

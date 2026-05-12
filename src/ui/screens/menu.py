@@ -1,4 +1,4 @@
-from typing import List, Optional, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple, TYPE_CHECKING
 
 import pygame
 
@@ -6,6 +6,9 @@ from settings import SETTINGS
 from ui.assets import AssetManager
 from ui.components import Menu
 from ui.screen import Screen
+
+if TYPE_CHECKING:
+    from ui.audio import AudioManager
 
 
 class MenuScreen(Screen):
@@ -15,8 +18,8 @@ class MenuScreen(Screen):
         ("Sair", SETTINGS.SCREEN_NAMES.QUIT),
     )
 
-    def __init__(self, assets: Optional[AssetManager] = None) -> None:
-        super().__init__(assets)
+    def __init__(self, assets: Optional[AssetManager] = None, audio_manager: Optional["AudioManager"] = None) -> None:
+        super().__init__(assets, audio_manager)
         self.menu = Menu(
             options=self.OPTIONS,
             font_renderer=self._font,
@@ -39,6 +42,8 @@ class MenuScreen(Screen):
         return None
 
     def update(self, delta_time: float) -> Optional[str]:
+        if self.audio_manager:
+            self.audio_manager.play_bgm("menu")
         return None
 
     def render(self, surface: pygame.Surface) -> None:

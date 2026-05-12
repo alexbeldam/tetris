@@ -43,15 +43,15 @@ class ScreenFactory:
         services: ServiceContainer
     ) -> Dict[str, Screen]:
         loading_screen = ScreenFactory.create_loading_screen(services)
-        game_screen = GameScreen(game, session, assets=None)
+        game_screen = GameScreen(game, session, assets=None, audio_manager=services.audio_manager)
         
         return {
             SETTINGS.SCREEN_NAMES.LOADING: loading_screen,
-            SETTINGS.SCREEN_NAMES.MENU: MenuScreen(assets=None),
-            SETTINGS.SCREEN_NAMES.RANKING: RankingScreen(assets=None),
+            SETTINGS.SCREEN_NAMES.MENU: MenuScreen(assets=None, audio_manager=services.audio_manager),
+            SETTINGS.SCREEN_NAMES.RANKING: RankingScreen(assets=None, audio_manager=services.audio_manager),
             SETTINGS.SCREEN_NAMES.GAME: game_screen,
-            SETTINGS.SCREEN_NAMES.PAUSE: PauseScreen(game_screen, assets=None),
-            SETTINGS.SCREEN_NAMES.GAME_OVER: GameOverScreen(game_screen, assets=None),
+            SETTINGS.SCREEN_NAMES.PAUSE: PauseScreen(game_screen, assets=None, audio_manager=services.audio_manager),
+            SETTINGS.SCREEN_NAMES.GAME_OVER: GameOverScreen(game_screen, assets=None, audio_manager=services.audio_manager),
         }
     
     @staticmethod

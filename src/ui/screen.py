@@ -1,18 +1,22 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, TYPE_CHECKING
 
 import pygame
 
 from settings import SETTINGS
 from ui.assets import AssetManager
 
+if TYPE_CHECKING:
+    from ui.audio import AudioManager
+
 
 Color = Tuple[int, int, int]
 
 
 class Screen(ABC):
-    def __init__(self, assets: Optional[AssetManager] = None) -> None:
+    def __init__(self, assets: Optional[AssetManager] = None, audio_manager: Optional["AudioManager"] = None) -> None:
         self.assets = assets
+        self.audio_manager = audio_manager
 
     @abstractmethod
     def handle_events(self, events: List[pygame.event.Event]) -> Optional[str]:

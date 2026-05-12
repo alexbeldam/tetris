@@ -21,6 +21,8 @@ class RankingScreen(Screen):
         return None
 
     def update(self, delta_time: float) -> Optional[str]:
+        if self.audio_manager:
+            self.audio_manager.play_bgm("menu")
         return None
 
     def render(self, surface: pygame.Surface) -> None:

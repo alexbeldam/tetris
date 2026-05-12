@@ -56,7 +56,10 @@ class Application:
         log.debug("📦 Initializing asset manager for game resources")
         self.services.initialize_assets()
         
-        log.debug("🌐 Establishing database connection for leaderboard data")
+        log.debug("� Initializing audio manager for music and sound effects")
+        self.services.initialize_audio()
+        
+        log.debug("�🌐 Establishing database connection for leaderboard data")
         net = self.services.initialize_network()
         
         if not net.wait_for_connection(timeout=SETTINGS.NETWORK.CONNECTION_TIMEOUT):

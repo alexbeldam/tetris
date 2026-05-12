@@ -1,4 +1,4 @@
-from typing import List, Optional, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple, TYPE_CHECKING
 
 import pygame
 
@@ -7,6 +7,9 @@ from ui.assets import AssetManager
 from ui.components import Menu
 from ui.screen import Screen
 from ui.screens.game import GameScreen
+
+if TYPE_CHECKING:
+    from ui.audio import AudioManager
 
 
 class GameOverScreen(Screen):
@@ -19,8 +22,9 @@ class GameOverScreen(Screen):
         self,
         game_screen: GameScreen,
         assets: Optional[AssetManager] = None,
+        audio_manager: Optional["AudioManager"] = None,
     ) -> None:
-        super().__init__(assets)
+        super().__init__(assets, audio_manager)
         self.game_screen = game_screen
         self.menu = Menu(
             options=self.OPTIONS,
