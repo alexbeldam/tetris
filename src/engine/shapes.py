@@ -199,6 +199,17 @@ def get_shape(tetromino: Tetromino, rotation: int = 0) -> Matrix:
     return _SHAPES[tetromino][rotation]
 
 
+def get_shape_coordinates(tetromino: Tetromino, rotation: int = 0) -> List[Point]:
+    matrix = get_shape(tetromino, rotation)
+    coordinates = []
+    for y, row in enumerate(matrix):
+        for x, cell in enumerate(row):
+            if cell == 1:
+                coordinates.append((x, y))
+    return coordinates
+
+
+
 def get_all_rotations(tetromino: Tetromino) -> List[Matrix]:
     if tetromino not in _SHAPES:
         raise ValueError(f"Invalid tetromino type: {tetromino}")

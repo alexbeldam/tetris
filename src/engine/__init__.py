@@ -1,6 +1,6 @@
 from .tile import Tile, Tetromino as TetrominoType
 from .tetromino import Tetromino
-from .shapes import get_shape, get_all_rotations, materialize_shape, get_occupied_cells
+from .shapes import get_shape, get_shape_coordinates, get_all_rotations, materialize_shape, get_occupied_cells
 from .board import Board
 from .game_controller import GameController
 from .game_session import GameSession, GameState
@@ -19,6 +19,7 @@ __all__ = [
     'Tetromino',
     'TetrominoType',
     'get_shape',
+    'get_shape_coordinates',
     'get_all_rotations',
     'materialize_shape',
     'get_occupied_cells',

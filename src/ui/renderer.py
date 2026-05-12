@@ -35,8 +35,8 @@ class GameRenderer:
         board_rect = pygame.Rect(
             0,
             0,
-            SETTINGS.SCREEN.GAME_WIDTH,
-            SETTINGS.SCREEN.GAME_HEIGHT,
+            SETTINGS.GRID.GAME_WIDTH,
+            SETTINGS.GRID.GAME_HEIGHT,
         )
         pygame.draw.rect(self.screen, (24, 30, 42), board_rect)
 
@@ -62,7 +62,7 @@ class GameRenderer:
         if ghost is None:
             return
 
-        tile_size = SETTINGS.SCREEN.TILE_SIZE
+        tile_size = SETTINGS.GRID.TILE_SIZE
         ghost_surface = pygame.Surface((tile_size, tile_size), pygame.SRCALPHA)
 
         if self.assets is not None:
@@ -94,25 +94,25 @@ class GameRenderer:
                 self.screen.blit(ghost_surface, rect)
 
     def _render_grid_lines(self) -> None:
-        tile_size = SETTINGS.SCREEN.TILE_SIZE
+        tile_size = SETTINGS.GRID.TILE_SIZE
 
-        for x in range(SETTINGS.SCREEN.GRID_WIDTH + 1):
+        for x in range(SETTINGS.GRID.GRID_WIDTH + 1):
             pygame.draw.line(
                 self.screen,
                 (37, 45, 61),
                 (x * tile_size, 0),
-                (x * tile_size, SETTINGS.SCREEN.GAME_HEIGHT),
+                (x * tile_size, SETTINGS.GRID.GAME_HEIGHT),
             )
-        for y in range(SETTINGS.SCREEN.GRID_HEIGHT + 1):
+        for y in range(SETTINGS.GRID.GRID_HEIGHT + 1):
             pygame.draw.line(
                 self.screen,
                 (37, 45, 61),
                 (0, y * tile_size),
-                (SETTINGS.SCREEN.GAME_WIDTH, y * tile_size),
+                (SETTINGS.GRID.GAME_WIDTH, y * tile_size),
             )
 
     def _render_sidebar(self) -> None:
-        left = SETTINGS.SCREEN.GAME_WIDTH + 24
+        left = SETTINGS.GRID.GAME_WIDTH + 24
 
         self._render_next_piece(left + 76, 50)
 
@@ -135,7 +135,7 @@ class GameRenderer:
         from engine.shapes import get_shape
 
         matrix = get_shape(next_piece_type, 0)
-        tile_size = SETTINGS.SCREEN.TILE_SIZE
+        tile_size = SETTINGS.GRID.TILE_SIZE
         preview_size = tile_size * 0.7
 
         matrix_width = len(matrix[0])
@@ -176,7 +176,7 @@ class GameRenderer:
         if tile == Tile.EMPTY:
             return
 
-        tile_size = SETTINGS.SCREEN.TILE_SIZE
+        tile_size = SETTINGS.GRID.TILE_SIZE
         rect = pygame.Rect(x * tile_size, y * tile_size, tile_size, tile_size)
 
         if self.assets is not None:

@@ -18,9 +18,9 @@ class Board:
             from settings import SETTINGS
 
             if width is None:
-                width = SETTINGS.SCREEN.GRID_WIDTH
+                width = SETTINGS.GRID.GRID_WIDTH
             if height is None:
-                height = SETTINGS.SCREEN.GRID_HEIGHT
+                height = SETTINGS.GRID.GRID_HEIGHT
 
         self.width = width
         self.height = height
@@ -28,7 +28,7 @@ class Board:
             [Tile.EMPTY for _ in range(self.width)] for _ in range(self.height)
         ]
 
-    def check_collision(self, matrix: Matrix, x: int, y: int) -> bool:
+    def check_collision(self, matrix: Matrix, x: int, y: int, allow_top_overflow: bool = False) -> bool:
         for row_index, row in enumerate(matrix):
             for col_index, cell in enumerate(row):
                 if not cell:
@@ -37,14 +37,14 @@ class Board:
                 board_x = x + col_index
                 board_y = y + row_index
 
-                if not self._is_inside(board_x, board_y):
+                if not self._is_inside(board_x, board_y, allow_top_overflow):
                     return True
 
-                if self.grid[board_y][board_x] != Tile.EMPTY:
+                if board_y >= 0 and self.grid[board_y][board_x] != Tile.EMPTY:
                     return True
 
         return False
-
+    
     def clear_full_rows(self) -> int:
         remaining_rows = [row for row in self.grid if not self._is_full_row(row)]
         cleared_count = self.height - len(remaining_rows)
@@ -67,8 +67,10 @@ class Board:
 
             self.grid[y][x] = tile
 
-    def _is_inside(self, x: int, y: int) -> bool:
-        return 0 <= x < self.width and 0 <= y < self.height
+    def _is_inside(self, x: int, y: int, allow_top_overflow: bool = False) -> bool:
+        x_in_bounds = 0 <= x < self.width
+        y_in_bounds = y < self.height if allow_top_overflow else 0 <= y < self.height
+        return x_in_bounds and y_in_bounds
 
     @staticmethod
     def _is_full_row(row: Sequence[Cell]) -> bool:

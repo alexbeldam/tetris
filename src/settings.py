@@ -2,10 +2,12 @@ from dataclasses import dataclass, field
 from typing import Dict, Tuple, List
 from engine.tile import Tile
 
+Color = Tuple[int, int, int]
+
 @dataclass(frozen=True)
 class TileInfo:
     index: int
-    color: Tuple[int, int, int]
+    color: Color
 
 @dataclass(frozen=True)
 class TilemapConfig:
@@ -38,15 +40,22 @@ class TileColorConfig:
         return tile_map[tile]
 
 @dataclass(frozen=True)
-class ScreenConfig:
+class GridConfig:
     TILE_SIZE: int = 30
     GRID_WIDTH: int = 10
     GRID_HEIGHT: int = 20
-    GAME_WIDTH: int = GRID_WIDTH * TILE_SIZE
-    GAME_HEIGHT: int = GRID_HEIGHT * TILE_SIZE
     SIDEBAR_WIDTH: int = 200
-    SCREEN_WIDTH: int = GAME_WIDTH + SIDEBAR_WIDTH
-    SCREEN_HEIGHT: int = GAME_HEIGHT
+    
+    @property
+    def GAME_WIDTH(self) -> int:
+        return self.GRID_WIDTH * self.TILE_SIZE
+    
+    @property
+    def GAME_HEIGHT(self) -> int:
+        return self.GRID_HEIGHT * self.TILE_SIZE
+
+@dataclass(frozen=True)
+class DisplayConfig:
     FPS: int = 60
 
 @dataclass(frozen=True)
@@ -88,6 +97,30 @@ class TetrominoConfig:
     SPAWN_Y: int = 0
 
 @dataclass(frozen=True)
+class SRSConfig:
+    JLSTZ_KICKS: Dict[str, List[Tuple[int, int]]] = field(default_factory=lambda: {
+        "0->1": [(0, 0), (-1, 0), (-1, 1), (0, -2), (-1, -2)],
+        "1->0": [(0, 0), (1, 0), (1, -1), (0, 2), (1, 2)],
+        "1->2": [(0, 0), (1, 0), (1, -1), (0, 2), (1, 2)],
+        "2->1": [(0, 0), (-1, 0), (-1, 1), (0, -2), (-1, -2)],
+        "2->3": [(0, 0), (1, 0), (1, 1), (0, -2), (1, -2)],
+        "3->2": [(0, 0), (-1, 0), (-1, -1), (0, 2), (-1, 2)],
+        "3->0": [(0, 0), (-1, 0), (-1, -1), (0, 2), (-1, 2)],
+        "0->3": [(0, 0), (1, 0), (1, 1), (0, -2), (1, -2)],
+    })
+    
+    I_KICKS: Dict[str, List[Tuple[int, int]]] = field(default_factory=lambda: {
+        "0->1": [(0, 0), (-2, 0), (1, 0), (-2, -1), (1, 2)],
+        "1->0": [(0, 0), (2, 0), (-1, 0), (2, 1), (-1, -2)],
+        "1->2": [(0, 0), (-1, 0), (2, 0), (-1, 2), (2, -1)],
+        "2->1": [(0, 0), (1, 0), (-2, 0), (1, -2), (-2, 1)],
+        "2->3": [(0, 0), (2, 0), (-1, 0), (2, 1), (-1, -2)],
+        "3->2": [(0, 0), (-2, 0), (1, 0), (-2, -1), (1, 2)],
+        "3->0": [(0, 0), (1, 0), (-2, 0), (1, -2), (-2, 1)],
+        "0->3": [(0, 0), (-1, 0), (2, 0), (-1, 2), (2, -1)],
+    })
+
+@dataclass(frozen=True)
 class GameplayConfig:
     USE_BAG_SYSTEM: bool = True
     LOCK_DELAY: float = 0.5
@@ -95,24 +128,108 @@ class GameplayConfig:
     ARR_DELAY: float = 0.033
 
 @dataclass(frozen=True)
-class AssetConfig:
+class UITypographyConfig:
     FONT_NAME: str = "PressStart2P-Regular.ttf"
-    FONT_SIZES: Tuple[int, ...] = (8, 12, 16, 24, 32)
+    TINY: int = 8
+    SMALL: int = 12
+    BODY: int = 16
+    LARGE: int = 20
+    TITLE: int = 24
+    DISPLAY: int = 32
+    
+    @property
+    def all_sizes(self) -> Tuple[int, ...]:
+        from dataclasses import fields
+        return tuple(
+            getattr(self, f.name) 
+            for f in fields(self) 
+            if f.type == int
+        )
+
+@dataclass(frozen=True)
+class AssetConfig:
     IMAGE_EXTENSIONS: Tuple[str, ...] = ('.png',)
     SFX_EXTENSIONS: Tuple[str, ...] = ('.wav',)
     MUSIC_EXTENSIONS: Tuple[str, ...] = ('.ogg',)
 
 @dataclass(frozen=True)
+class UIThemeConfig:
+    TEXT_PRIMARY: Color = (248, 248, 242)
+    TEXT_MUTED: Color = (98, 114, 164)
+    CYAN: Color = (139, 233, 253)
+    GREEN: Color = (80, 250, 123)
+    ORANGE: Color = (255, 184, 108)
+    PINK: Color = (255, 121, 198)
+    PURPLE: Color = (189, 147, 249)
+    RED: Color = (255, 85, 85)
+    YELLOW: Color = (241, 250, 140)
+    BG_DARKER: Color = (30, 32, 40)
+    BG_DARK: Color = (40, 42, 54)
+    BG_MEDIUM: Color = (68, 71, 90)
+    BG_LIGHT: Color = (98, 114, 164)
+    WHITE: Color = (255, 255, 255)
+    GRAY_DARK: Color = (68, 71, 90)
+
+@dataclass(frozen=True)
+class LoadingLayoutConfig:
+    SPLASH_SIZE_MULTIPLIER: int = 15
+    BLOCK_SCALE_MULTIPLIER: float = 1.33
+    PROGRESS_BAR_HEIGHT_RATIO: float = 2.0 / 3.0
+    PROGRESS_BAR_WIDTH_MULTIPLIER: float = 13.33
+    BORDER_WIDTH: int = 2
+
+@dataclass(frozen=True)
+class LoadingAnimationConfig:
+    ANIMATION_CYCLE_TIME: float = 4.0
+    FRAME_DELAY: int = 3
+    MIN_DISPLAY_TIME_RATIO: float = 0.5
+    PROGRESS_THRESHOLD: float = 0.995
+    
+    @property
+    def MIN_DISPLAY_TIME(self) -> float:
+        return self.ANIMATION_CYCLE_TIME * self.MIN_DISPLAY_TIME_RATIO
+    
+    @property
+    def PROGRESS_SMOOTH_SPEED(self) -> float:
+        import math
+        return -math.log(1 - self.PROGRESS_THRESHOLD) / self.MIN_DISPLAY_TIME
+
+@dataclass(frozen=True)
+class NetworkConfig:
+    CONNECTION_TIMEOUT: float = 5.0
+    DEFAULT_TIMEOUT: float = 3.0
+    SERVER_SELECTION_TIMEOUT_MS: int = 2000
+    HEARTBEAT_INTERVAL_S: int = 30
+
+@dataclass(frozen=True)
+class ScreenNames:
+    LOADING: str = "loading"
+    MENU: str = "menu"
+    GAME: str = "game"
+    GAME_OVER: str = "game_over"
+    PAUSE: str = "pause"
+    RANKING: str = "ranking"
+    QUIT: str = "quit"
+
+@dataclass(frozen=True)
 class Settings:
-    SCREEN: ScreenConfig = field(default_factory=ScreenConfig)
+    GRID: GridConfig = field(default_factory=GridConfig)
+    DISPLAY: DisplayConfig = field(default_factory=DisplayConfig)
     DIFFICULTY: DifficultyConfig = field(default_factory=DifficultyConfig)
     SCORING: ScoringConfig = field(default_factory=ScoringConfig)
     PATHS: PathConfig = field(default_factory=PathConfig)
     TILEMAP: TilemapConfig = field(default_factory=TilemapConfig)
     TILE_COLORS: TileColorConfig = field(default_factory=TileColorConfig)
     TETROMINO: TetrominoConfig = field(default_factory=TetrominoConfig)
+    SRS: SRSConfig = field(default_factory=SRSConfig)
     GAMEPLAY: GameplayConfig = field(default_factory=GameplayConfig)
+    UI_TYPOGRAPHY: UITypographyConfig = field(default_factory=UITypographyConfig)
     ASSETS: AssetConfig = field(default_factory=AssetConfig)
+    LOADING_LAYOUT: LoadingLayoutConfig = field(default_factory=LoadingLayoutConfig)
+    LOADING_ANIMATION: LoadingAnimationConfig = field(default_factory=LoadingAnimationConfig)
+    UI_THEME: UIThemeConfig = field(default_factory=UIThemeConfig)
+    NETWORK: NetworkConfig = field(default_factory=NetworkConfig)
+    SCREEN_NAMES: ScreenNames = field(default_factory=ScreenNames)
     APP_NAME: str = "Bloquinhos"
 
 SETTINGS = Settings()
