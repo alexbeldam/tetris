@@ -1,14 +1,15 @@
 name: Build and Release
 
 on:
-  push:
-    branches:
-      - 'release/v*'
+  workflow_dispatch:
 
 jobs:
   build:
     name: Build & Package ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -el {0}
     strategy:
       matrix:
         include:
@@ -21,19 +22,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up Conda environment
+        uses: conda-incubator/setup-miniconda@v3
         with:
-          python-version: '3.13'
+          activate-environment: block_env
+          environment-file: environment.yml
+          auto-activate-base: false
 
       - name: Create .env file from Secrets
-        shell: bash
         run: echo "${{ secrets.ENV_FILE_CONTENT }}" > .env
 
-      - name: Install dependencies
+      - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pygame pymongo python-dotenv cryptography certifi pyinstaller
+          python -m pip install pyinstaller
 
       - name: Install nFPM
         if: startsWith(matrix.os, 'ubuntu')
@@ -44,8 +46,7 @@ jobs:
           nfpm --version
 
       - name: Set VERSION
-        shell: bash
-        run: echo "VERSION=${GITHUB_REF#refs/heads/release/v}" >> $GITHUB_ENV
+        run: echo "VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml | head -1)" >> $GITHUB_ENV
 
       - name: Build executable
         run: make build
@@ -68,9 +69,12 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Get version from branch
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from pyproject
         shell: bash
-        run: echo "VERSION=${GITHUB_REF#refs/heads/release/v}" >> $GITHUB_ENV
+        run: echo "VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml | head -1)" >> $GITHUB_ENV
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -81,31 +85,10 @@ jobs:
           tag_name: v${{ env.VERSION }}
           name: Bloquinhos - v${{ env.VERSION }}
           generate_release_notes: true
-          body: |
-            ## 🎮 Como Jogar
-
-            ### 🪟 Windows
-            1. Baixe o `.exe`.
-            2. Clique com o botão direito → Propriedades → Desbloquear.
-            3. Execute o instalador.
-
-            ### 🐧 Linux
-            1. Baixe o `.deb` ou `.rpm`.
-            2. Instale via terminal:
-               ```bash
-               sudo apt install ./bloquinhos-linux.deb
-               sudo dnf install bloquinhos-linux.rpm
-               ```
+          body_path: .github/release-body.md
           files: |
             windows/*.exe
             linux/*.deb
             linux/*.rpm
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Delete Release Branch
-        if: success()
-        uses: dawidd6/action-delete-branch@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branches: ${{ github.ref_name }}
