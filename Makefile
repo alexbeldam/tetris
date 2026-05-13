@@ -1,6 +1,6 @@
-ENV_NAME = block_env
+ENV_NAME = $(shell scripts/get-env-name)
 PYINSTALLER ?= pyinstaller
-VERSION ?= $(shell sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml | head -1)
+VERSION ?= $(shell scripts/get-version)
 
 .PHONY: setup run clean clean-build deep-clean reset \
         build-linux build-windows package-linux package-windows \

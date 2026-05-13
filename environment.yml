@@ -6,8 +6,4 @@ dependencies:
   - python=3.13
   - pip
   - pip:
-    - pygame
-    - pymongo
-    - python-dotenv
-    - cryptography
-    - certifi
+    - -e .

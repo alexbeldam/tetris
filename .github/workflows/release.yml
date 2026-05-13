@@ -23,7 +23,9 @@ jobs:
 
       - name: Get version from pyproject
         shell: bash
-        run: echo "VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml | head -1)" >> $GITHUB_ENV
+        run: |
+          chmod +x scripts/get-version
+          echo "VERSION=$(scripts/get-version)" >> $GITHUB_ENV
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4

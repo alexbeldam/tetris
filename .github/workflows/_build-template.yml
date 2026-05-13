@@ -39,7 +39,6 @@ jobs:
       - name: Set up Conda environment
         uses: conda-incubator/setup-miniconda@v3
         with:
-          activate-environment: block_env
           environment-file: environment.yml
           auto-activate-base: false
 
@@ -60,7 +59,9 @@ jobs:
           nfpm --version
 
       - name: Set VERSION from pyproject
-        run: echo "VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml | head -1)" >> $GITHUB_ENV
+        run: |
+          chmod +x scripts/get-version
+          echo "VERSION=$(scripts/get-version)" >> $GITHUB_ENV
 
       - name: Build executable
         run: make build

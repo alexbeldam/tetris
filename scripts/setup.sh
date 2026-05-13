@@ -4,7 +4,9 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
-ENV_NAME="block_env"
+ENV_NAME=$(scripts/get-env-name)
+
+chmod +x scripts/get-env-name scripts/get-version
 
 clear
 echo -e "${BLUE}🚀 Iniciando setup do ambiente...${NC}\n"

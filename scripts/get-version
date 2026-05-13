@@ -1,0 +1,4 @@
+#!/bin/bash
+# Extract version from pyproject.toml
+
+sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml | head -1
