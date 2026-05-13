@@ -10,8 +10,12 @@ readme = "README.md"
 requires-python = ">=3.13"
 license = { text = "MIT" }
 authors = [
-  { name = "Alex Beldam" },
-  { name = "Bernardo Sabino" },
+  { name = "Alex Beldam", email = "alexbeldam@gmail.com" },
+  { name = "Bernardo Sabino", email = "contatobernardosabino@gmail.com" },
+]
+maintainers = [
+  { name = "Alex Beldam", email = "alexbeldam@gmail.com" },
+  { name = "Bernardo Sabino", email = "contatobernardosabino@gmail.com" },
 ]
 dependencies = [
   "pygame",
@@ -26,3 +30,14 @@ package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.bloquinhos]
+display_name = "Bloquinhos"
+
+[tool.bloquinhos.packaging]
+vendor = "alexbeldam, bernardo-sabino"
+
+[tool.bloquinhos.packaging.variants]
+linux_deb_arch = "amd64"
+linux_rpm_arch = "x86_64"
+windows_arch = "x64"

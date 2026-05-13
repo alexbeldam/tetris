@@ -1,6 +1,14 @@
-ENV_NAME = $(shell scripts/get-env-name)
+ENV_NAME = $(shell scripts/get-meta.sh env_name)
 PYINSTALLER ?= pyinstaller
-VERSION ?= $(shell scripts/get-version)
+VERSION ?= $(shell scripts/get-meta.sh version)
+APP_ID ?= $(shell scripts/get-meta.sh app_id)
+APP_DISPLAY ?= $(shell scripts/get-meta.sh app_display)
+MAINTAINER ?= $(shell scripts/get-meta.sh maintainer_line)
+VENDOR ?= $(shell scripts/get-meta.sh vendor)
+LINUX_DEB_ARCH ?= $(shell scripts/get-meta.sh deb_arch)
+LINUX_RPM_ARCH ?= $(shell scripts/get-meta.sh rpm_arch)
+WINDOWS_ARCH ?= $(shell scripts/get-meta.sh windows_arch)
+APP_SETUP_BASENAME ?= $(APP_DISPLAY)Setup
 
 .PHONY: help setup env-sync docker-build start stop run run-dev update \
 	clean clean-cache clean-coverage clean-logs clean-data \
@@ -133,31 +141,37 @@ deep-clean: clean clean-build clean-package clean-data clean-docker clean-env cl
 reset: deep-clean setup
 
 build-linux:
+	@if [ -z "$(APP_ID)" ]; then echo "❌ Could not resolve APP_ID from pyproject.toml."; exit 1; fi
 	@command -v $(PYINSTALLER) >/dev/null 2>&1 || { echo "❌ PyInstaller not found. Install it first or set PYINSTALLER."; exit 1; }
 	@echo "🔧 Building Linux executable..."
-	@$(PYINSTALLER) --onedir --windowed --name "bloquinhos" --paths src --add-data ".env:." src/main.py
+	@$(PYINSTALLER) --onedir --windowed --name "$(APP_ID)" --paths src --add-data ".env:." src/main.py
 	@echo "✅ Linux build complete."
 
 build-windows:
+	@if [ -z "$(APP_ID)" ]; then echo "❌ Could not resolve APP_ID from pyproject.toml."; exit 1; fi
 	@command -v $(PYINSTALLER) >/dev/null 2>&1 || { echo "❌ PyInstaller not found. Install it first or set PYINSTALLER."; exit 1; }
 	@echo "🔧 Building Windows executable..."
-	@$(PYINSTALLER) --onedir --windowed --name "bloquinhos" --paths src --icon="assets/img/icon.ico" --add-data ".env;." src/main.py
+	@$(PYINSTALLER) --onedir --windowed --name "$(APP_ID)" --paths src --icon="assets/img/icon.ico" --add-data ".env;." src/main.py
 	@echo "✅ Windows build complete."
 
 package-linux:
 	@if [ -z "$(VERSION)" ]; then echo "❌ Could not resolve VERSION from pyproject.toml."; exit 1; fi
+	@if [ -z "$(APP_ID)" ]; then echo "❌ Could not resolve APP_ID from pyproject.toml."; exit 1; fi
+	@if [ -z "$(MAINTAINER)" ]; then echo "❌ Could not resolve MAINTAINER from pyproject.toml."; exit 1; fi
+	@if [ -z "$(VENDOR)" ]; then echo "❌ Could not resolve VENDOR from pyproject.toml."; exit 1; fi
 	@command -v nfpm >/dev/null 2>&1 || { echo "❌ nFPM not found. Install it first."; exit 1; }
 	@echo "📦 Packaging Linux DEB and RPM (version $(VERSION))..."
-	@nfpm pkg --packager deb --target bloquinhos_$(VERSION)_amd64.deb
-	@nfpm pkg --packager rpm --target bloquinhos-$(VERSION)-x86_64.rpm
+	@APP_ID="$(APP_ID)" APP_DISPLAY="$(APP_DISPLAY)" VERSION="$(VERSION)" MAINTAINER="$(MAINTAINER)" VENDOR="$(VENDOR)" LINUX_DEB_ARCH="$(LINUX_DEB_ARCH)" nfpm pkg --packager deb --target $(APP_ID)_$(VERSION)_$(LINUX_DEB_ARCH).deb
+	@APP_ID="$(APP_ID)" APP_DISPLAY="$(APP_DISPLAY)" VERSION="$(VERSION)" MAINTAINER="$(MAINTAINER)" VENDOR="$(VENDOR)" LINUX_DEB_ARCH="$(LINUX_DEB_ARCH)" nfpm pkg --packager rpm --target $(APP_ID)-$(VERSION)-$(LINUX_RPM_ARCH).rpm
 	@echo "✅ Linux packaging complete."
 	
 package-windows:
 	@if [ -z "$(VERSION)" ]; then echo "❌ Could not resolve VERSION from pyproject.toml."; exit 1; fi
+	@if [ -z "$(APP_ID)" ]; then echo "❌ Could not resolve APP_ID from pyproject.toml."; exit 1; fi
 	@command -v iscc.exe >/dev/null 2>&1 || { echo "❌ Inno Setup Compiler (iscc.exe) not found."; exit 1; }
 	@echo "📦 Packaging Windows installer (version $(VERSION))..."
-	@iscc.exe /DMyAppVersion=$(VERSION) scripts/install_script.iss
-	@mv output/BloquinhosSetup.exe BloquinhosSetup_v$(VERSION)_x64.exe
+	@iscc.exe /DMyAppVersion=$(VERSION) /DMyAppId=$(APP_ID) /DMyAppName=$(APP_DISPLAY) /DMyAppExe=$(APP_ID).exe /DMyOutputBaseFilename=$(APP_SETUP_BASENAME) scripts/install_script.iss
+	@mv output/$(APP_SETUP_BASENAME).exe $(APP_SETUP_BASENAME)_v$(VERSION)_$(WINDOWS_ARCH).exe
 	@echo "✅ Windows packaging complete."
 
 build:

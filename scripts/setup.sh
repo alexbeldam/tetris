@@ -4,9 +4,9 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
-ENV_NAME=$(scripts/get-env-name)
+ENV_NAME=$(scripts/get-meta.sh env_name)
 
-chmod +x scripts/get-env-name scripts/get-version
+chmod +x scripts/get-meta.sh
 
 clear
 echo -e "${BLUE}🚀 Iniciando setup do ambiente...${NC}\n"

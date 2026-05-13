@@ -58,16 +58,11 @@ jobs:
           sudo dpkg -i nfpm.deb
           nfpm --version
 
-      - name: Set VERSION from pyproject
-        run: |
-          chmod +x scripts/get-version
-          echo "VERSION=$(scripts/get-version)" >> $GITHUB_ENV
-
       - name: Build executable
         run: make build
 
       - name: Package artifacts
-        run: make package VERSION=${{ env.VERSION }}
+        run: make package
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

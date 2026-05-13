@@ -24,8 +24,8 @@ jobs:
       - name: Get version from pyproject
         shell: bash
         run: |
-          chmod +x scripts/get-version
-          echo "VERSION=$(scripts/get-version)" >> $GITHUB_ENV
+          chmod +x scripts/get-meta.sh
+          echo "VERSION=$(scripts/get-meta.sh version)" >> $GITHUB_ENV
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4

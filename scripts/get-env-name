@@ -1,4 +1,0 @@
-#!/bin/bash
-# Extract conda environment name from environment.yml
-
-sed -n 's/^name: *//p' environment.yml
