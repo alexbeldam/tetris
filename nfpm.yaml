@@ -1,5 +1,5 @@
 name: "${APP_ID}"
-arch: "${LINUX_DEB_ARCH}"
+arch: "${PACKAGE_ARCH}"
 platform: "linux"
 version: "${VERSION}"
 section: "games"

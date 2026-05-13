@@ -14,7 +14,7 @@ APP_SETUP_BASENAME ?= $(APP_DISPLAY)Setup
 	clean clean-cache clean-coverage clean-logs clean-data \
 	clean-build clean-package clean-docker clean-env clean-conda \
 	deep-clean reset \
-	build-linux build-windows package-linux package-windows \
+	build-linux build-windows package-linux-deps package-deb package-rpm package-linux package-windows \
 	build package
 
 help:
@@ -38,6 +38,9 @@ help:
 	@echo "  make reset            - Deep clean then setup"
 	@echo "  make build            - Build executable for current OS"
 	@echo "  make package          - Package artifacts for current OS"
+	@echo "  make package-deb      - Package DEB installer (Linux only)"
+	@echo "  make package-rpm      - Package RPM installer (Linux only)"
+	@echo "  make package-linux    - Package both DEB and RPM (Linux only)"
 
 setup:
 	@chmod +x scripts/setup.sh
@@ -154,16 +157,29 @@ build-windows:
 	@$(PYINSTALLER) --onedir --windowed --name "$(APP_ID)" --paths src --icon="assets/img/icon.ico" --add-data ".env;." src/main.py
 	@echo "✅ Windows build complete."
 
-package-linux:
+package-linux-deps:
 	@if [ -z "$(VERSION)" ]; then echo "❌ Could not resolve VERSION from pyproject.toml."; exit 1; fi
 	@if [ -z "$(APP_ID)" ]; then echo "❌ Could not resolve APP_ID from pyproject.toml."; exit 1; fi
 	@if [ -z "$(MAINTAINER)" ]; then echo "❌ Could not resolve MAINTAINER from pyproject.toml."; exit 1; fi
 	@if [ -z "$(VENDOR)" ]; then echo "❌ Could not resolve VENDOR from pyproject.toml."; exit 1; fi
 	@command -v nfpm >/dev/null 2>&1 || { echo "❌ nFPM not found. Install it first."; exit 1; }
-	@echo "📦 Packaging Linux DEB and RPM (version $(VERSION))..."
-	@APP_ID="$(APP_ID)" APP_DISPLAY="$(APP_DISPLAY)" VERSION="$(VERSION)" MAINTAINER="$(MAINTAINER)" VENDOR="$(VENDOR)" LINUX_DEB_ARCH="$(LINUX_DEB_ARCH)" nfpm pkg --packager deb --target $(APP_ID)_$(VERSION)_$(LINUX_DEB_ARCH).deb
-	@APP_ID="$(APP_ID)" APP_DISPLAY="$(APP_DISPLAY)" VERSION="$(VERSION)" MAINTAINER="$(MAINTAINER)" VENDOR="$(VENDOR)" LINUX_DEB_ARCH="$(LINUX_DEB_ARCH)" nfpm pkg --packager rpm --target $(APP_ID)-$(VERSION)-$(LINUX_RPM_ARCH).rpm
-	@echo "✅ Linux packaging complete."
+	@command -v envsubst >/dev/null 2>&1 || { echo "❌ envsubst not found. Install gettext package."; exit 1; }
+
+package-deb: package-linux-deps
+	@echo "📦 Packaging DEB (version $(VERSION))..."
+	@APP_ID="$(APP_ID)" APP_DISPLAY="$(APP_DISPLAY)" VERSION="$(VERSION)" MAINTAINER="$(MAINTAINER)" VENDOR="$(VENDOR)" PACKAGE_ARCH="$(LINUX_DEB_ARCH)" envsubst < nfpm.yaml > nfpm.yaml.tmp
+	@nfpm pkg --config nfpm.yaml.tmp --packager deb --target $(APP_ID)_$(VERSION)_$(LINUX_DEB_ARCH).deb
+	@rm nfpm.yaml.tmp
+	@echo "✅ DEB packaging complete."
+
+package-rpm: package-linux-deps
+	@echo "📦 Packaging RPM (version $(VERSION))..."
+	@APP_ID="$(APP_ID)" APP_DISPLAY="$(APP_DISPLAY)" VERSION="$(VERSION)" MAINTAINER="$(MAINTAINER)" VENDOR="$(VENDOR)" PACKAGE_ARCH="$(LINUX_RPM_ARCH)" envsubst < nfpm.yaml > nfpm.yaml.tmp
+	@nfpm pkg --config nfpm.yaml.tmp --packager rpm --target $(APP_ID)-$(VERSION)-$(LINUX_RPM_ARCH).rpm
+	@rm nfpm.yaml.tmp
+	@echo "✅ RPM packaging complete."
+
+package-linux: package-deb package-rpm
 	
 package-windows:
 	@if [ -z "$(VERSION)" ]; then echo "❌ Could not resolve VERSION from pyproject.toml."; exit 1; fi
