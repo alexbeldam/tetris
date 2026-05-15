@@ -166,6 +166,8 @@ package-linux-deps:
 	@command -v envsubst >/dev/null 2>&1 || { echo "❌ envsubst not found. Install gettext package."; exit 1; }
 
 package-deb: package-linux-deps
+	@if [ -z "$(LINUX_DEB_ARCH)" ]; then echo "❌ Could not resolve LINUX_DEB_ARCH from pyproject.toml."; exit 1; fi
+	@if [ -z "$(APP_DISPLAY)" ]; then echo "❌ Could not resolve APP_DISPLAY from pyproject.toml."; exit 1; fi
 	@echo "📦 Packaging DEB (version $(VERSION))..."
 	@APP_ID="$(APP_ID)" APP_DISPLAY="$(APP_DISPLAY)" VERSION="$(VERSION)" MAINTAINER="$(MAINTAINER)" VENDOR="$(VENDOR)" PACKAGE_ARCH="$(LINUX_DEB_ARCH)" envsubst < nfpm.yaml > nfpm.yaml.tmp
 	@nfpm pkg --config nfpm.yaml.tmp --packager deb --target $(APP_ID)_$(VERSION)_$(LINUX_DEB_ARCH).deb
@@ -173,6 +175,8 @@ package-deb: package-linux-deps
 	@echo "✅ DEB packaging complete."
 
 package-rpm: package-linux-deps
+	@if [ -z "$(LINUX_RPM_ARCH)" ]; then echo "❌ Could not resolve LINUX_RPM_ARCH from pyproject.toml."; exit 1; fi
+	@if [ -z "$(APP_DISPLAY)" ]; then echo "❌ Could not resolve APP_DISPLAY from pyproject.toml."; exit 1; fi
 	@echo "📦 Packaging RPM (version $(VERSION))..."
 	@APP_ID="$(APP_ID)" APP_DISPLAY="$(APP_DISPLAY)" VERSION="$(VERSION)" MAINTAINER="$(MAINTAINER)" VENDOR="$(VENDOR)" PACKAGE_ARCH="$(LINUX_RPM_ARCH)" envsubst < nfpm.yaml > nfpm.yaml.tmp
 	@nfpm pkg --config nfpm.yaml.tmp --packager rpm --target $(APP_ID)-$(VERSION)-$(LINUX_RPM_ARCH).rpm
@@ -184,6 +188,9 @@ package-linux: package-deb package-rpm
 package-windows:
 	@if [ -z "$(VERSION)" ]; then echo "❌ Could not resolve VERSION from pyproject.toml."; exit 1; fi
 	@if [ -z "$(APP_ID)" ]; then echo "❌ Could not resolve APP_ID from pyproject.toml."; exit 1; fi
+	@if [ -z "$(APP_DISPLAY)" ]; then echo "❌ Could not resolve APP_DISPLAY from pyproject.toml."; exit 1; fi
+	@if [ -z "$(WINDOWS_ARCH)" ]; then echo "❌ Could not resolve WINDOWS_ARCH from pyproject.toml."; exit 1; fi
+	@if [ -z "$(APP_SETUP_BASENAME)" ]; then echo "❌ Could not resolve APP_SETUP_BASENAME."; exit 1; fi
 	@command -v iscc.exe >/dev/null 2>&1 || { echo "❌ Inno Setup Compiler (iscc.exe) not found."; exit 1; }
 	@echo "📦 Packaging Windows installer (version $(VERSION))..."
 	@iscc.exe /DMyAppVersion=$(VERSION) /DMyAppId=$(APP_ID) /DMyAppName=$(APP_DISPLAY) /DMyAppExe=$(APP_ID).exe /DMyOutputBaseFilename=$(APP_SETUP_BASENAME) scripts/install_script.iss
