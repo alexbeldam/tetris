@@ -15,6 +15,9 @@ class _KeyBackend(ABC):
     @abstractmethod
     def store(self, key: bytes) -> bool: ...
 
+    @abstractmethod
+    def secure_file(self, path: str) -> None: ...
+
 
 class _WindowsBackend(_KeyBackend):
     def load(self) -> Optional[bytes]:
@@ -38,15 +41,18 @@ class _WindowsBackend(_KeyBackend):
             key_path = PathManager.get_dpapi_key_path()
             with open(key_path, "wb") as f:
                 f.write(encrypted)
-            try:
-                import ctypes
-                ctypes.windll.kernel32.SetFileAttributesW(key_path, 2)
-            except Exception:
-                log.debug("Could not set hidden attribute on key file")
+            self.secure_file(key_path)
             return True
         except Exception:
             log.warning("DPAPI key storage failed, using fallback", exc_info=True)
             return False
+
+    def secure_file(self, path: str) -> None:
+        try:
+            import ctypes
+            ctypes.windll.kernel32.SetFileAttributesW(path, 2)
+        except Exception:
+            log.warning("Could not set hidden attribute on key file", exc_info=True)
 
 
 class _UnixBackend(_KeyBackend):
@@ -70,6 +76,9 @@ class _UnixBackend(_KeyBackend):
             log.warning("Keyring storage failed, using fallback", exc_info=True)
             return False
 
+    def secure_file(self, path: str) -> None:
+        os.chmod(path, 0o600)
+
 
 class _NullBackend(_KeyBackend):
     def load(self) -> Optional[bytes]:
@@ -77,6 +86,9 @@ class _NullBackend(_KeyBackend):
 
     def store(self, _key: bytes) -> bool:
         return False
+
+    def secure_file(self, _path: str) -> None:
+        log.warning("File permissions not applied — unsupported platform")
 
 
 class KeyManager:
@@ -114,7 +126,7 @@ class KeyManager:
             key_path = PathManager.get_fallback_key_path()
             with open(key_path, "wb") as f:
                 f.write(key)
-            os.chmod(key_path, 0o600)
+            self._backend.secure_file(key_path)
             log.warning("Encryption key stored in local filesystem as fallback (not secure)")
         except Exception:
             log.error("Failed to persist encryption key", exc_info=True)
