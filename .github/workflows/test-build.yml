@@ -1,0 +1,21 @@
+name: Test Build and Package
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+
+jobs:
+  test_build:
+    uses: ./.github/workflows/_build-template.yml
+    with:
+      artifact_prefix: test
+      retention_days: 7
+    secrets:
+      env_content: ${{ secrets.ENV_FILE_CONTENT }}

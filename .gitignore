@@ -42,5 +42,29 @@ logs/
 *.iml
 *.iws
 .vscode/
-.github/
+.github/*
 !.github/workflows/
+!.github/release-body.md
+
+# --- Package & Build Files ---
+*.deb
+*.rpm
+*.exe
+output/
+bloquinhos.spec
+
+# --- OS-Specific ---
+.DS_Store
+Thumbs.db
+
+# --- Testing & Coverage ---
+.mypy_cache/
+.coverage
+htmlcov/
+.pytest_cache/
+
+# --- Editor Backups ---
+*~
+*.swp
+*.swo
+.netrwhist
